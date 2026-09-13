@@ -191,4 +191,4 @@ and checks the project with `flake8`.
 
 [View the GitHub Actions runs](https://github.com/thedatauser/nd0821-c3-starter-code/actions)
 
-[View the CI evidence screenshot](starter/screenshots/continuous_integration.png)
+View the [screenshots folder](starter/screenshots/) for all evidence.
