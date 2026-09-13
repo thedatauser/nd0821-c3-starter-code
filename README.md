@@ -1,5 +1,7 @@
 # Salary Predictor API
 
+[GitHub repository](https://github.com/thedatauser/nd0821-c3-starter-code)
+
 This project trains a machine-learning model that predicts whether a person's
 annual income is `<=50K` or `>50K` using census information. The trained model
 is served through a FastAPI application and deployed as a web service on
