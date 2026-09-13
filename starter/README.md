@@ -1,83 +1,157 @@
-Working in a command line environment is recommended for ease of use with git and dvc. If on Windows, WSL1 or 2 is recommended.
+# Census Income Prediction API
 
-# Environment Set up
-* **Option 1: Using pip and venv (Recommended)**
-    * Ensure you have Python 3.13 installed
-    * Create virtual environment: `python3.13 -m venv .venv`
-    * Activate environment: `source .venv/bin/activate` (On Windows: `.venv\Scripts\activate`)
-    * Install dependencies: `pip install -r requirements.txt`
+This project trains a machine-learning model that predicts whether a person's
+annual income is `<=50K` or `>50K` using census information. The trained model
+is served through a FastAPI application and deployed as a web service on
+Render.
 
-* **Option 2: Using conda**
-    * Download and install conda if you don't have it already.
-    * conda create -n [envname] "python=3.13" scikit-learn dvc pandas numpy pytest jupyter jupyterlab fastapi uvicorn pydantic httpx matplotlib seaborn -c conda-forge
-    * Install git either through conda ("conda install git") or through your CLI, e.g. sudo apt-get git.
+## Project Structure
 
-## Repositories
+```text
+starter/
+├── data/census.csv                 # Census Income dataset
+├── model/census_model.pkl          # Trained model and preprocessing artifacts
+├── main.py                         # FastAPI application
+└── starter/ml/
+    ├── data.py                     # Data cleaning and feature encoding
+    └── model.py                    # Training, inference, and metrics
+```
 
-* Create a directory for the project and initialize Git and DVC.
-   * As you work on the code, continually commit changes. Trained models you want to keep must be committed to DVC.
-* Connect your local Git repository to GitHub.
+The model artifact is included in the repository because the deployed API
+loads it when serving predictions. The API does not retrain the model for each
+request.
 
-## Set up S3
+## How It Works
 
-* In your CLI environment install the<a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html" target="_blank"> AWS CLI tool</a>.
-* In the navigation bar in the Udacity classroom select **Open AWS Gateway** and then click **Open AWS Console**. You will not need the AWS Access Key ID or Secret Access Key provided here.
-* From the Services drop down select S3 and then click Create bucket.
-* Give your bucket a name, the rest of the options can remain at their default.
+1. The census data is loaded from `data/census.csv`.
+2. Numeric and categorical features are prepared by `starter/ml/data.py`.
+3. Categorical columns are encoded for use by scikit-learn.
+4. A `RandomForestClassifier` is trained in `starter/ml/model.py`.
+5. The model, encoder, and label binarizer are saved together in
+   `model/census_model.pkl`.
+6. FastAPI loads those artifacts and uses them to predict income for new
+   census records.
 
-To use your new S3 bucket from the AWS CLI you will need to create an IAM user with the appropriate permissions. The full instructions can be found <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console" target="_blank">here</a>, what follows is a paraphrasing:
+The classifier returns a numeric label internally. The API converts that label
+into the user-facing values `<=50K` and `>50K`.
 
-* Sign in to the IAM console <a href="https://console.aws.amazon.com/iam/" target="_blank">here</a> or from the Services drop down on the upper navigation bar.
-* In the left navigation bar select **Users**, then choose **Add user**.
-* Give the user a name and select **Programmatic access**.
-* In the permissions selector, search for S3 and give it **AmazonS3FullAccess**
-* Tags are optional and can be skipped.
-* After reviewing your choices, click create user. 
-* Configure your AWS CLI to use the Access key ID and Secret Access key.
+## Install Dependencies
 
-## GitHub Actions
+Using the project's Conda environment:
 
-* Setup GitHub Actions on your repository. You can use one of the pre-made GitHub Actions if at a minimum it runs pytest and flake8 on push and requires both to pass without error.
-   * Make sure you set up the GitHub Action to use Python 3.13 (same version as development).
-   * Note: Add flake8 to requirements.txt if you want to use it for linting: `pip install flake8`
-* Add your <a href="https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions" target="_blank">AWS credentials to the Action</a>.
-* Set up <a href="https://github.com/iterative/setup-dvc" target="_blank">DVC in the action</a> and specify a command to `dvc pull`.
+```bash
+conda activate nyc_airbnb_dev
+pip install -r requirements.txt
+```
 
-## Data
+Or using a virtual environment:
 
-* Download census.csv from the data folder in the starter repository.
-   * Information on the dataset can be found <a href="https://archive.ics.uci.edu/ml/datasets/census+income" target="_blank">here</a>.
-* Create a remote DVC remote pointing to your S3 bucket and commit the data.
-* This data is messy, try to open it in pandas and see what you get.
-* To clean it, use your favorite text editor to remove all spaces.
-* Commit this modified data to DVC under a new name (we often want to keep the raw data untouched but then can keep updating the cooked version).
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-## Model
+## Run Locally
 
-* Using the starter code, write a machine learning model that trains on the clean data and saves the model. Complete any function that has been started.
-* Write unit tests for at least 3 functions in the model code.
-* Write a function that outputs the performance of the model on slices of the data.
-   * Suggestion: for simplicity, the function can just output the performance on slices of just the categorical features.
-* Write a model card using the provided template.
+From the repository root, start the API with:
 
-## API Creation
+```bash
+uvicorn starter.main:app --reload
+```
 
-* Create a RESTful API using FastAPI this must implement:
-   * GET on the root giving a welcome message.
-   * POST that does model inference.
-   * Type hinting must be used.
-   * Use a Pydantic model to ingest the body from POST. This model should contain an example.
-    * Hint: the data has names with hyphens and Python does not allow those as variable names. Do not modify the column names in the csv and instead use the functionality of FastAPI/Pydantic/etc to deal with this.
-* Write 3 unit tests to test the API (one for the GET and two for POST, one that tests each prediction).
+The local API is available at `http://127.0.0.1:8000`.
 
-## API Deployment
+Interactive API documentation is available at:
 
-* Create a free Heroku account (for the next steps you can either use the web GUI or download the Heroku CLI).
-* Create a new app and have it deployed from your GitHub repository.
-   * Enable automatic deployments that only deploy if your continuous integration passes.
-   * Hint: think about how paths will differ in your local environment vs. on Heroku.
-   * Hint: development in Python is fast! But how fast you can iterate slows down if you rely on your CI/CD to fail before fixing an issue. I like to run flake8 locally before I commit changes.
-   * Note: Install flake8 separately if needed: `pip install flake8`
-* Set up DVC on Heroku using the instructions contained in the starter directory.
-* Set up access to AWS on Heroku, if using the CLI: `heroku config:set AWS_ACCESS_KEY_ID=xxx AWS_SECRET_ACCESS_KEY=yyy`
-* Write a script that uses the requests module to do one POST on your live API.
+```text
+http://127.0.0.1:8000/docs
+```
+
+## API Endpoints
+
+### `GET /`
+
+Checks that the API is running.
+
+Example response:
+
+```json
+{"message":"Welcome to the census income prediction API."}
+```
+
+### `POST /predict`
+
+Accepts a census record and returns an income prediction. Field names that
+contain hyphens are accepted as written in the dataset, for example
+`education-num` and `marital-status`.
+
+Example request:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 39,
+    "workclass": "State-gov",
+    "fnlgt": 77516,
+    "education": "Bachelors",
+    "education-num": 13,
+    "marital-status": "Never-married",
+    "occupation": "Adm-clerical",
+    "relationship": "Not-in-family",
+    "race": "White",
+    "sex": "Male",
+    "capital-gain": 2174,
+    "capital-loss": 0,
+    "hours-per-week": 40,
+    "native-country": "United-States"
+  }'
+```
+
+Example response:
+
+```json
+{"prediction":"<=50K"}
+```
+
+## Testing
+
+Run the model and API tests from the repository root:
+
+```bash
+python -m pytest tests/test_model.py tests/test_api.py -q
+```
+
+The tests cover model training, inference, metrics, slice metrics, the root
+endpoint, and prediction requests.
+
+## Deployment
+
+The application is configured for Render through the root `Procfile`:
+
+```text
+web: uvicorn starter.main:app --host 0.0.0.0 --port ${PORT:-8000}
+```
+
+Push changes to the connected GitHub repository and Render will deploy the new
+commit. After deployment, verify the service with:
+
+```bash
+curl -i https://YOUR-RENDER-SERVICE.onrender.com/
+```
+
+Then open the deployed API documentation:
+
+```text
+https://YOUR-RENDER-SERVICE.onrender.com/docs
+```
+
+Use `POST /predict` in the documentation page to test a live prediction.
+
+## Model Evaluation
+
+The model module provides precision, recall, and F-beta score calculations.
+It also supports evaluating performance across slices of categorical features.
+These metrics help check whether model performance differs between groups in
+the census data.
