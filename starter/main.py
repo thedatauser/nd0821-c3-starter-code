@@ -11,7 +11,7 @@ from starter.starter.ml.model import inference, train_model
 MODEL_PATH = Path(__file__).resolve().parent / "model" / "census_model.pkl"
 DATA_PATH = Path(__file__).resolve().parent / "data" / "census.csv"
 
-app = FastAPI(title="Census Salary Predictor")
+app = FastAPI(title="Salary Predictor")
 
 
 class CensusInput(BaseModel):

@@ -1,4 +1,4 @@
-# Census Income Prediction API
+# Salary Predictor API
 
 This project trains a machine-learning model that predicts whether a person's
 annual income is `<=50K` or `>50K` using census information. The trained model
