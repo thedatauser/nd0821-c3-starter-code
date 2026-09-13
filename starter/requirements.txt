@@ -1,6 +1,9 @@
 # Exact versions from working .venv for Python 3.13
 # Generated from pip freeze - September 2025
 
+# Linting
+flake8==7.3.0
+
 # Web framework and server
 fastapi==0.117.1
 uvicorn[standard]==0.36.0
