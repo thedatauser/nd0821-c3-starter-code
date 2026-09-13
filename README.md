@@ -126,6 +126,19 @@ python -m pytest tests/test_model.py tests/test_api.py -q
 The tests cover model training, inference, metrics, slice metrics, the root
 endpoint, and prediction requests.
 
+## Train the Model
+
+From the repository root, run the training module with:
+
+```bash
+python -m starter.starter.train_model
+```
+
+The script splits the census data into training and evaluation sets, trains
+the random forest and encoders, saves the deployable artifact to
+`starter/model/census_model.pkl`, and writes precision, recall, and F1 results
+for each categorical feature slice to `slice_output.txt`.
+
 ## Deployment
 
 The application is configured for Render through the root `Procfile`:
@@ -138,16 +151,30 @@ Push changes to the connected GitHub repository and Render will deploy the new
 commit. After deployment, verify the service with:
 
 ```bash
-curl -i https://YOUR-RENDER-SERVICE.onrender.com/
+curl -i https://nd0821-c3-starter-code-2-qzor.onrender.com/
 ```
 
 Then open the deployed API documentation:
 
 ```text
-https://YOUR-RENDER-SERVICE.onrender.com/docs
+https://nd0821-c3-starter-code-2-qzor.onrender.com/docs
 ```
 
 Use `POST /predict` in the documentation page to test a live prediction.
+
+The live API can also be tested with the requests script:
+
+```bash
+python starter/request_api.py
+```
+
+[View the FastAPI docs example screenshot](starter/screenshots/example.png)
+
+[View the continuous deployment screenshot](starter/screenshots/continuous_deployment.png)
+
+[View the live GET endpoint screenshot](starter/screenshots/live_get.png)
+
+[View the live POST request screenshot](starter/screenshots/live_post.png)
 
 ## Model Evaluation
 
@@ -163,3 +190,5 @@ workflow uses Python 3.13, runs the seven model and API tests with `pytest`,
 and checks the project with `flake8`.
 
 [View the GitHub Actions runs](https://github.com/thedatauser/nd0821-c3-starter-code/actions)
+
+[View the CI evidence screenshot](starter/screenshots/continuous_integration.png)
