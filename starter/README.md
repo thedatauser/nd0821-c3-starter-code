@@ -155,3 +155,11 @@ The model module provides precision, recall, and F-beta score calculations.
 It also supports evaluating performance across slices of categorical features.
 These metrics help check whether model performance differs between groups in
 the census data.
+
+## Continuous Integration Evidence
+
+GitHub Actions runs automatically when code is pushed to `master`. The
+workflow uses Python 3.13, runs the seven model and API tests with `pytest`,
+and checks the project with `flake8`.
+
+[View the GitHub Actions runs](https://github.com/thedatauser/nd0821-c3-starter-code/actions)
