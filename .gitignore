@@ -117,6 +117,9 @@ dmypy.json
 *.model
 *.weights
 
+# The deployed API needs its trained model artifact.
+!starter/model/census_model.pkl
+
 # Data files (but keep small sample data)
 *.csv
 !starter/data/census.csv  # Keep the census dataset
